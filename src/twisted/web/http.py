@@ -998,18 +998,20 @@ class Request:
                         # decodes the header bytes as iso-8859-1 and
                         # decodes the body bytes as utf8 with
                         # surrogateescape -- we want bytes
-                        self.args.update(
-                            {
-                                x.encode("iso-8859-1"): [
+                        encodedArgs = {}
+                        for x, y in cgiArgs.items():
+                            if isinstance(x, str):
+                                try:
+                                    k = x.encode("iso-8859-1")
+                                except UnicodeEncodeError:
+                                    k = x.encode("utf8")
+                                encodedArgs[k] = [
                                     z.encode("utf8", "surrogateescape")
                                     if isinstance(z, str)
                                     else z
                                     for z in y
                                 ]
-                                for x, y in cgiArgs.items()
-                                if isinstance(x, str)
-                            }
-                        )
+                        self.args.update(encodedArgs)
                     else:
                         # The parse_multipart function on Python 3
                         # decodes the header bytes as iso-8859-1 and
